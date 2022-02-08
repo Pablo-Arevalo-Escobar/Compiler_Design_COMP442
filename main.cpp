@@ -8,7 +8,8 @@
 
 int main() {
     Lexer parser = Lexer("../transitionTable.txt","../tokens.txt","../finalStates.txt");
-    parser.readFile("../lexpositivegrading.src");
+    parser.readFile("/Users/pabloarevalo/CLionProjects/COMP442/lexnegativegrading.src");
     return 0;
+
 }
 

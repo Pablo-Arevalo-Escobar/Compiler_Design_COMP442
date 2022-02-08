@@ -184,7 +184,7 @@ std::string Lexer::error(char c) {
     errorString.append(": line ").append(std::to_string(lineCount));
     errorList.emplace_back(errorString);
     std::string character = std::string{c};
-    return ("invalidchar " + character + " " + std::to_string(lineCount));
+    return ("[invalidchar, " + character + ", " + std::to_string(lineCount) + std::string("]"));
 
 }
 
@@ -264,15 +264,29 @@ std::string Lexer::nextToken() {
 }
 
 void Lexer::readFile(std::string fileIn) {
+    std::fstream foutTokens, foutErrors;
+    std::string fileToken =  "outlextokens.txt";
+    std::string fileError = "outlexerrors.txt";
+
+    foutTokens.open(fileToken, std::ios::out);
+    if(!foutTokens){
+        std::cout << "No such file "<<  fileToken << std::endl;
+    }
+
     file.open(fileIn,std::ios::in);
     if (!file) {
-        std::cout << "No such file";
+        std::cout << "No such file pos";
     }
     std::string token;
+    int count = 1;
     while(!file.eof()){
         token = nextToken();
         if(!token.empty()){
-            std::cout << token << std::endl;
+            if(count != lineCount){
+                foutTokens << '\n';
+                count++;
+            }
+            foutTokens << token;
         }
         if(file.eof()){
             if(!stack.empty()){
@@ -281,5 +295,15 @@ void Lexer::readFile(std::string fileIn) {
             }
         }
     }
+
+    foutErrors.open(fileError,std::ios::out);
+    if(!foutErrors){
+        std::cout << "No such file foutErrors" << std::endl;
+    }
+    for(auto& err: errorList){
+        foutErrors << err << '\n';
+    }
     file.close();
+    foutTokens.close();
+    foutErrors.close();
 }
