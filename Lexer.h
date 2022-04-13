@@ -20,11 +20,10 @@ private:
     int **table;
     int numStates = 0;
     int finalState;
-    int lineCount = 1;
+    unsigned int lineCount = 1;
 public:
     Lexer(std::string tableFile, std::string tokenFile, std::string finalStateFile);
     ~Lexer();
-    //todo: deep copy constructor
     bool isInteger(std::string);
     bool isFinal(int state);
     char nextChar(int state);

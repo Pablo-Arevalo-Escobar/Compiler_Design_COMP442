@@ -131,6 +131,8 @@ bool Lexer::isFinal(int state) {
     return false;
 }
 
+
+
 char Lexer::nextChar(int state) {
     char c = file.get();
     if(c == '\r'){
@@ -139,12 +141,15 @@ char Lexer::nextChar(int state) {
 
     if(c == '\n'){
         inputString.append("\\n");
-        lineCount++;
+        ++lineCount;
         return c;
     }
     inputString.append(1,c);
 
     if(inputString.length() > 1){
+        if(c == '\''){
+            return 'l';
+        }
         if(inputString.substr( inputString.length() - 2 ).compare("/*") == 0){
             stack.push("/*");
         }
@@ -177,14 +182,14 @@ char Lexer::nextChar(int state) {
     return c;
 }
 
-std::string Lexer::error(char c) {
+std::string  Lexer::error(char c) {
     std::string errorString; errorString.clear();
     errorString.append("Lexical error: Invalid character: ");
     errorString.append(std::string{c});
     errorString.append(": line ").append(std::to_string(lineCount));
     errorList.emplace_back(errorString);
     std::string character = std::string{c};
-    return ("[invalidchar, " + character + ", " + std::to_string(lineCount) + std::string("]"));
+    return "ERROR";
 
 }
 
@@ -225,9 +230,9 @@ std::string Lexer::createToken(int state) {
 }
 
 std::string Lexer::nextToken() {
-    int state = 0;
     std::string token;
     char lookup;
+    int state = 0;
     int tokenIndex = 0;
 
     token.clear();
@@ -245,7 +250,9 @@ std::string Lexer::nextToken() {
         if(state == -1){
             inputString.clear();
             if(!token.empty()){
-                file.unget();
+                if(lookup != '\n'){
+                    file.unget();
+                }
             }
             else if(!(lookup == ' ' || lookup == '\n')){
                 return error(lookup);
@@ -277,15 +284,17 @@ void Lexer::readFile(std::string fileIn) {
     if (!file) {
         std::cout << "No such file pos";
     }
+
     std::string token;
     int count = 1;
     while(!file.eof()){
         token = nextToken();
-        if(!token.empty()){
+        if(!token.empty() && !(token.compare("ERROR") == 0)){
             if(count != lineCount){
-                foutTokens << '\n';
+//                foutTokens << '\n';
                 count++;
             }
+            foutTokens << '\n';
             foutTokens << token;
         }
         if(file.eof()){
@@ -307,3 +316,4 @@ void Lexer::readFile(std::string fileIn) {
     foutTokens.close();
     foutErrors.close();
 }
+
